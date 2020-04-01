@@ -8,6 +8,9 @@ import firebase from '../../firebase';
 
 //can look in application tab of dev tools and find the global authentication object in Firebase's localStorage once a user is logged in
 
+//TODO: Move firebase functions over to firebase.js and then import them here for neatness!
+//TODO: Move firebase config credentials to REACT_APP_XYZ environment variables in a .env folder (that way, we don't have to .gitignore firebase.js)
+
 function App() {
   const [formState, setFormState] = useState({ email: '', password: '' });
   //add a state for the logged in user! This way it'll trigger a re-render and store the user object in here.
@@ -79,18 +82,6 @@ function App() {
       });
     setFormState({ email: '', password: '' });
     console.log('login finished');
-    // return;
-    //}
-    // firebase
-    //   .auth()
-    //   .createUserWithEmailAndPassword(email, password)
-    //   .catch(function(error) {
-    //     // Handle Errors here.
-    //     //var errorCode = error.code;
-    //     //var errorMessage = error.message;
-    //     console.error(error);
-    //   });
-    // console.log(`new user signed up with email ${email}`);
   }
 
   function handleSignout() {
@@ -105,11 +96,31 @@ function App() {
       });
   }
 
+  const googleProvider = new firebase.auth.GoogleAuthProvider();
+
   console.log(loggedInUser);
+
+  //Sign in with google:
+  function handleSignInWithPopup() {
+    firebase
+      .auth()
+      .signInWithPopup(googleProvider)
+      .catch(function(error) {
+        // Handle Errors here.
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        // The email of the user's account used.
+        var email = error.email;
+        // The firebase.auth.AuthCredential type that was used.
+        var credential = error.credential;
+        // ...
+        console.error(error);
+      });
+  }
 
   return (
     <div className="App">
-      <p>Log in here:</p>
+      <p>Log in (or register) here:</p>
       <form onSubmit={handleSubmit}>
         <label>Email: </label>
         <input
@@ -129,7 +140,11 @@ function App() {
         <br />
         <input type="submit" />
       </form>
-      <button onClick={handleSignup}>Register as user</button>
+      <button onClick={handleSignInWithPopup}>
+        Sign in with your Google account
+      </button>
+      <br />
+      <button onClick={handleSignup}>Sign up as new user</button>
       {loggedInUser && (
         <p>This is the secret message for {loggedInUser.email}!</p>
       )}
